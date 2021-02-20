@@ -1,0 +1,154 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  default:
+    - task: help
+
+  routes:
+    desc: Prints api http routes
+    cmds:
+      - poetry run flask routes
+
+  reset:
+    desc: Restarts development environment
+    cmds:
+      - task: clean
+      - task: setup
+
+  clean:
+    desc: Restarts development environment
+    cmds:
+      - rm /tmp/simple-todo-app.db
+      - rm /tmp/test-simple-todo-app.db
+      - rm -rf web/node_modules
+      - rm -rf api/.venv
+    preconditions:
+      - sh: "[[ -d api/.venv ]] && [[ -d web/node_modules ]]"
+        msg: "Seems that the project has not even been started, run `task setup` first before running `task clean`"
+
+  format:
+    desc: Formats elixir code
+    cmds:
+      - mix format
+
+  migrate:
+    desc: Runs database migrations
+    dir: api
+    deps: [check.api]
+    cmds:
+      - python -m poetry run python manage.py migrate
+
+  api.server:
+    desc: Starts api for development environment
+    deps: [migrate]
+    dir: api
+    cmds:
+      - python -m poetry run python runserver.py
+
+  web.server:
+    desc: Starts api for development environment
+    deps: [check.web]
+    dir: web
+    cmds:
+      - npm run serve
+
+  web.build:
+    desc: Generates Build for web Application
+    deps: [check.web]
+    dir: web
+    cmds:
+      - npm run build
+
+  web.lint:
+    desc: Runs linter for web application
+    deps: [check.web]
+    dir: web
+    cmds:
+      - npm run lint
+
+  setup.web:
+    desc: Setup Web Application
+    dir: web
+    cmds:
+      - npm install
+
+  setup.api:
+    desc: Setup API
+    dir: api
+    cmds:
+      - python -m pip install --user poetry
+      - python -m poetry install
+
+  setup:
+    desc: |
+      Setups the monorepo
+    cmds:
+      - asdf install
+      - task: setup.web
+      - task: setup.api
+    status:
+      - test -d api/.venv
+      - test -d web/node_modules
+
+  seed:
+    desc: Seeds database with testing data
+    dir: api
+    cmds:
+      - python -m poetry run python manage.py db:seed
+
+
+  check.api:
+    desc: Checks if api setup is working
+    dir: api
+    preconditions:
+      - sh: "[[ ! -d /tmp/simple-todo-app.db ]] && [[ ! -d /tmp/test-simple-todo-app.db ]]"
+        msg: "Run `task setup.api` first as Database has not been created"
+
+  check.web:
+    desc: Checks if web setup is working
+    dir: web
+    preconditions:
+      - sh: "[[ ! -d web/node_modules ]]"
+        msg: "Run `task setup.web` as `node_modules` have not been installed"
+
+  check:
+    desc: Checks if environment is properly setup
+    deps: [check.api, check.web]
+
+  test.api:
+    desc: Run tests for api
+    deps: [check.api]
+    dir: api
+    cmds:
+      - python -m poetry run pytest
+
+  test.api.wip:
+    desc: Run work in progress tagged tests for api
+    deps: [check.api]
+    dir: api
+    cmds:
+      - python -m poetry run pytest -v -m wip
+
+  test.web:
+    desc: Runs tests for web
+    dir: web
+    cmds:
+      - npm test
+
+  test.web.watch:
+    desc: Runs tests in watch mode
+    dir: web
+    cmds:
+      - npm run test.watch
+
+  test:
+    desc: Runs all tests both api and web
+    cmds:
+      - task: test.api
+      - task: test.web
+
+  help:
+    - cmd: echo "This is the cli tool for managing the project"
+      silent: true

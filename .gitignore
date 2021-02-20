@@ -1,0 +1,31 @@
+# API
+api/.venv
+api/__pycache__
+api/**/__pycache__
+api/**/*.pyc
+api/.run
+
+
+# Web
+web/node_modules
+web/dist
+
+web/.env.local
+web/.env.*.local
+
+# Log files
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/pnpm-debug.log*
+
+
+# Miscelanius
+.DS_Store
+**/.DS_Store
+**/*.log
+
+
+.vscode/settings.json
+
+
