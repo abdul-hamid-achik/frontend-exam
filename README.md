@@ -1,4 +1,6 @@
-# Frontend Exam
+# About
+
+This is an exam i came up with to help my friends practice for their frontend exams so don`t take it too serious, if you wanna take it let me know, feel free to clone, fork, use if you find it useful
 
 Create a UI for the existing API with the following requirements
 
